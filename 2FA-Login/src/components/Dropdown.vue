@@ -1,10 +1,10 @@
 <template>
-    <div class="dropdown-wrapper" ref="dropDown">
-        <div class="dropdown-selected-option" @click="isDropdownOpen = true">
+    <div class="dropdown" ref="dropdown">
+        <div class="dropdown-selected-option" @click="isDropdownOpen = !isDropdownOpen">
             {{ dropdownSelectedOption }}
         </div>
     </div>
-    <div class="options-wrapper" v-if="isDropdownOpen">
+    <div class="dropdownOptions" ref="dropdownOptions" v-if="isDropdownOpen">
         <div class="option" v-for="(option, index) in props.options" :key="index" @click="toggleOptionSelect(option)">
             {{ option.description || option }}
         </div>
@@ -12,7 +12,7 @@
 </template>
 
 <script setup>
-    import {computed, ref, onMounted, onBeforeUnmount} from "vue"
+    import {computed, ref, onMounted, onBeforeUnmount, watchEffect} from "vue"
 
     const props = defineProps({
         options: {
@@ -28,7 +28,9 @@
         }
     })
 
-    const dropDown = ref(null)
+    const dropdown = ref(null)
+
+    const dropdownOptions = ref(null)
 
     const emit = defineEmits(["update:modelValue"])
 
@@ -48,12 +50,17 @@
     }
 
     const closeDropdown = (element) => {
-        if (!dropDown.value.contains(element.target)) {
+        if (!dropdown.value.contains(element.target)) {
             isDropdownOpen.value = false
         }
     }
 
     onMounted(() => {
+        watchEffect(() => {
+            if (dropdown.value && dropdownOptions.value) {
+                dropdownOptions.value.style.width = dropdown.value.offsetWidth + 'px';
+            }
+        });
         window.addEventListener("click", closeDropdown)
     })
 
@@ -64,29 +71,47 @@
 </script>
 
 <style>
-    .dropdown-wrapper {
-        padding: 16px;
+    .dropdown {
         cursor: pointer;
-        border: solid 1px #000000;
+        border: solid 1px #D1D5DB;
         margin: 0 auto;
+        border-radius: 8px;
+        line-height: 1.5rem;
+        font-size: 0.875rem;
+    }
+    .dropdownOptions {
+        position: absolute;
+        background: #FFFFFF;
     }
     .dropdown-selected-option {
-        padding: 16px;
-        border: solid 1 #000000;
+        border: solid 1 #D1D5DB;
         border-radius: 8px;
         box-sizing: border-box;
+        padding: 0.375rem;
         margin-bottom: 4px;
+        font-size: 0.875rem;
     }
     .option:hover {
-        background: #c5c5c5;
+        background: #6366F1;
+        color: #FFFFFF;
     }
     .option {
-        padding: 16px;
+        padding: 0.375rem;
         cursor: pointer;
-        border: solid 1px #000000;
+        border-left: solid 1px #D1D5DB;
+        border-right: solid 1px #D1D5DB;
+        border-bottom: 0px;
         box-sizing: border-box;
+        font-size: 0.875rem;
+    }
+    .option:first-of-type {
+        margin-top: 5px;
+        border-top: solid 1px #D1D5DB;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
     }
     .option:last-of-type {
+        border-bottom: solid 1px #D1D5DB;
         border-bottom-left-radius: 8px;
         border-bottom-right-radius: 8px;
     }
