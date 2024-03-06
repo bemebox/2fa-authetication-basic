@@ -1,7 +1,12 @@
 <template>
-    <div class="dropdown" ref="dropdown">
-        <div class="dropdown-selected-option" @click="isDropdownOpen = !isDropdownOpen">
-            {{ dropdownSelectedOption }}
+    <div class="dropdown" ref="dropdown" @click="isDropdownOpen = !isDropdownOpen">
+        <div class="dropdown-content">
+            <div class="dropdown-selected-option">
+                {{ dropdownSelectedOption }}
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" height="15" width="15" viewBox="0 0 512 512" class="dropdown-icon">
+                <path fill="#4f46e5" d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z"/>
+            </svg>
         </div>
     </div>
     <div class="dropdownOptions" ref="dropdownOptions" v-if="isDropdownOpen">
@@ -78,11 +83,27 @@
         border-radius: 8px;
         line-height: 1.5rem;
         font-size: 0.875rem;
+        position: relative;
     }
+
     .dropdownOptions {
         position: absolute;
         background: #FFFFFF;
     }
+
+    .dropdown-content {
+        display: flex !important;
+        align-items: center;
+        padding-left: 5px;        
+        padding-right: 5px;
+    }
+
+    .dropdown-icon {
+        margin-left: auto; /* Align to the right */
+        fill: #4f46e5;
+        cursor: pointer;
+    }
+
     .dropdown-selected-option {
         border: solid 1 #D1D5DB;
         border-radius: 8px;
