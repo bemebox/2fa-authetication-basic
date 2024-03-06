@@ -25,7 +25,7 @@
     <div class="md:flex md:items-center md:justify-between mt-4">
         <div class="min-w-0 flex-1">
             <h2 @click="onHome" class="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
-                <a href="#" @click="onHome">Auth Demo</a></h2>
+                <a href="#" @click="onHome">2FA Auth Demo</a></h2>
         </div>
         <div class="mt-5 flex md:ml-4 md:mt-0">
             <span class="hidden sm:block">
