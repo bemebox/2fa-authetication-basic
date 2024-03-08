@@ -1,3 +1,4 @@
+import { useAuthStore } from '@/stores/auth';
 import DashboardView from '@/views/DashboardView.vue';
 import LoginView from '@/views/LoginView.vue';
 import RegistrationView from '@/views/RegistrationView.vue';
@@ -29,6 +30,18 @@ const router = createRouter({
       component: TwoFactorAuthView
     }    
   ]
+})
+
+router.beforeEach(async (to) => {
+  const publicPages = ['/login', '/register']
+  const authRequired = !publicPages.includes(to.path);
+  const authStore = useAuthStore();
+
+  //if authentication is required and the user is not logged in
+  if(authRequired && !authStore.token) {
+    return '/login';
+  }
+
 })
 
 export default router

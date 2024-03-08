@@ -1,8 +1,9 @@
 <script lang="ts" setup>
-
+    import { useAuthStore } from "@/stores/auth";
     import { reactive } from "vue";
     import { ref } from "vue";
 
+    const authStore = useAuthStore();
     const errorMessage = ref<string>('');
     const errorOccurred = ref<boolean>(false);
 
@@ -12,6 +13,16 @@
     });
 
     async function onSubmit() {
+        if(user.username != '' && user.password != ''){          
+            try{  
+                await authStore.login(user.username, user.password);
+                errorMessage.value = '';
+                errorOccurred.value = false;
+            }catch(error){
+                errorMessage.value = (error as Error).message;
+                errorOccurred.value = true;
+            }
+        }
 
     }
 </script>
