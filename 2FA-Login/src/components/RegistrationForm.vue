@@ -1,26 +1,47 @@
-<script setup>
-
+<script lang="ts" setup>
+    import { useRegisterStore } from '@/stores/register';
     import { ref, reactive } from 'vue';
     import Dropdown from './Dropdown.vue';
     
-    const options = ref ([
+    const store = useRegisterStore();
+    const defaultOptionDescription = ref("-- Select Option --");
+    const parentSelectedOption = ref(null);
+    const confirm_password = ref<string>('');
+    const errorMessage = ref<string>('');
+    const errorOccurred = ref<boolean>(false);
+
+    const options = ref<Array>([
         {description: "-- Select Option --", value: "" },
         {description: "TOTP", value: "totp" },
         {description: "Email", value: "email" },
         {description: "SMS", value: "sms" },
     ])
 
-    const defaultOptionDescription = ref("-- Select Option --")
-
-    const parentSelectedOption = ref(null)
-
-    const confirm_password = '';
-
     const user = reactive({
         username: '',
         email: '',
-        password: ''
+        password: '',
+        mfa_type: ''
     });
+
+    async function onSubmit() {
+        if(user.username != '' && user.email != '' && user.password != ''){          
+            try{
+
+                user.mfa_type = ''
+                if (parentSelectedOption != null && parentSelectedOption.value != null) {
+                    user.mfa_type = parentSelectedOption.value.value
+                }
+
+                await store.signup(user.username, user.email, user.password, user.mfa_type);
+                errorMessage.value = '';
+                errorOccurred.value = false;
+            }catch(error){
+                errorMessage.value = (error as Error).message;
+                errorOccurred.value = true;
+            }
+        }
+    }
 
 </script>
 
@@ -34,7 +55,7 @@
             <h2 class="mt-5 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Create an account</h2>
         </div>
 
-        <div  class="mt-6 sm:mx-auto sm:w-full sm:max-w-sm">
+        <div v-show="errorOccurred" class="mt-6 sm:mx-auto sm:w-full sm:max-w-sm">
             <div class="bg-red-100 border-t border-b border-red-500 text-red-700 px-4 py-3" role="alert">
                 <div class="flex">
                     <div class="py-1">
@@ -42,14 +63,14 @@
                     </div>
                     <div>                
                         <p class="font-bold">Error message</p>
-                        <p class="text-sm"></p>
+                        <p class="text-sm">{{ errorMessage }}</p>
                     </div>
                 </div>
             </div>        
         </div>
 
         <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-sm">
-            <form class="space-y-6">
+            <form class="space-y-6" @submit.prevent="onSubmit">
                 <div>
                     <div class="flex items-center justify-between">
                         <label for="username" class="block text-sm font-medium leading-6 text-gray-900">Username</label>
