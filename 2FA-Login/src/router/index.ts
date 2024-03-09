@@ -37,8 +37,6 @@ router.beforeEach(async (to) => {
   const authRequired = !publicPages.includes(to.path);
   const authStore = useAuthStore();
 
-  console.log('expired ' + authStore.expired())
-  
   if(authRequired && authStore.expired()) {
     return '/login';
   }

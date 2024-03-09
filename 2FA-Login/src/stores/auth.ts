@@ -1,8 +1,8 @@
 import router from '@/router';
 import HttpResponseError from '@/exception/HttpResponseError';
 import { defineStore } from "pinia";
+import API_ENDPOINTS from '@/configs/api_endpoints';
 
-const LOGIN_ROUTE = '/login';
 
 interface AuthStoreState {
     username: string | null;
@@ -18,9 +18,25 @@ export const useAuthStore = defineStore('authStore', {
         
     }),
     actions: {
-        async login(username: string, password: string) {
+        clearLocalStorage() {
+            this.username = null;
+            this.token = null;
+            this.expirationDate = null;
 
-            const url = 'http://localhost:8762/api/v1.0/authentication/login';
+            localStorage.removeItem('username');
+            localStorage.removeItem('token');         
+            localStorage.removeItem('expirationDate');  
+        },
+        expired() {            
+            // the auth store is expired if the token is null or the expiration date is less than current date
+            const isExpired = this.token == null || this.expirationDate == null || this.expirationDate < Date.now()
+            if(isExpired) {
+                this.clearLocalStorage();
+            }
+            
+            return isExpired
+        },
+        async login(username: string, password: string) {
 
             // generate the basic authentication username and password header property
             const headers = new Headers();
@@ -33,6 +49,7 @@ export const useAuthStore = defineStore('authStore', {
 
             try{
                 // username and password basic authentication API call
+                const url = API_ENDPOINTS.host.url + API_ENDPOINTS.auth.userLogin
                 const response = await fetch(url, requestData);
                 if (!response.ok) {
                     if (response.status === 401) {
@@ -59,38 +76,21 @@ export const useAuthStore = defineStore('authStore', {
                 router.push('/');
             }catch(error){
                 if (error instanceof HttpResponseError) {
-                    throw error; // Throw the expected HTTP error
+                    console.error('Http response error:', error);
+                    throw error;
+                } else if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+                    console.error('Network error:', error);
+                    throw new HttpResponseError('Network error. Please check your internet connection.');
+                } else {
+                    console.error('Unexpected error:', error);
+                    throw new Error('Unexpected error');
                 }
-                console.error('Unexpected error:', error); // Log unexpected errors with stack trace
-                throw new Error('Unexpected error');
             }
 
         },   
         logout() {
-            this.username = null;
-            this.token = null;
-            this.expirationDate = null;
-
-            localStorage.removeItem('username');
-            localStorage.removeItem('token');         
-            localStorage.removeItem('expirationDate');   
-            
-            router.push(LOGIN_ROUTE)
+            this.clearLocalStorage();
+            router.push('/login')
         },
-        expired() {            
-            // the auth store is expired if the token is null or the expiration date is less than current date
-            var isExpired = this.token == null || this.expirationDate == null || this.expirationDate < Date.now()
-            if(isExpired) {
-                this.username = null;
-                this.token = null;
-                this.expirationDate = null;
-    
-                localStorage.removeItem('username');
-                localStorage.removeItem('token');         
-                localStorage.removeItem('expirationDate');                 
-            }
-            
-            return isExpired
-        }
     },
 })
