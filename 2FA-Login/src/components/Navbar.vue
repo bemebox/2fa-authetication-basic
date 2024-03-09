@@ -30,17 +30,17 @@
                 <a href="#" @click="onHome">2FA Auth Demo</a></h2>
         </div>
         <div class="mt-5 flex md:ml-4 md:mt-0">
-            <span class="hidden sm:block">
+            <span v-show="authStore.expired()" class="hidden sm:block">
                 <button type="button" @click="onSignIn" class="inline-flex items-center bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:text-gray-300">
                     Sign In
                 </button>
             </span>
-            <span class="hidden sm:block">
+            <span v-show="!authStore.expired()" class="hidden sm:block">
                 <button type="button" @click="onLogout" class="inline-flex items-center bg-white px-3 py-2 text-sm font-semibold text-gray-900 hover:text-gray-300">
                     Logout
                 </button>
             </span>
-            <span class="sm:ml-3">
+            <span v-show="authStore.expired()" class="sm:ml-3">
                 <button type="button" @click="onCreateAccount" class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
                     Create Account
                 </button>
