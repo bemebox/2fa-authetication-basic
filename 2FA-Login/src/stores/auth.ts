@@ -3,16 +3,20 @@ import HttpResponseError from '@/exception/HttpResponseError';
 import { defineStore } from "pinia";
 
 const LOGIN_ROUTE = '/login';
-const TWO_FACTOR_AUTH_ROUTE = '/two-factor-auth';
 
-export const useAuthStore = defineStore ({
-    id: 'auth',
-    state: () => {
-        return {
-            username: localStorage.getItem('username') ? JSON.parse(localStorage.getItem('username')!) : null,
-            token: localStorage.getItem('token') ? JSON.parse(localStorage.getItem('token')!) : null,    
-        }
-    },
+interface AuthStoreState {
+    username: string | null;
+    token: null;
+    expirationDate: number | null;  
+}
+  
+export const useAuthStore = defineStore('authStore', {
+    state: (): AuthStoreState => ({
+        username: localStorage.getItem('username') ? JSON.parse(localStorage.getItem('username')!) : null,
+        token: localStorage.getItem('token') ? JSON.parse(localStorage.getItem('token')!) : null,
+        expirationDate: localStorage.getItem('expirationDate') ? JSON.parse(localStorage.getItem('expirationDate')!) : null,
+        
+    }),
     actions: {
         async login(username: string, password: string) {
 
@@ -40,17 +44,19 @@ export const useAuthStore = defineStore ({
 
                 const jsonResponse = await response.json();
                 if (jsonResponse.access_token) {
+                    
+                    var expirationDate = Date.now() + 60000; // 1 minute in milliseconds
+
                     localStorage.setItem('username', JSON.stringify(username));
                     localStorage.setItem('token', JSON.stringify(jsonResponse.access_token));
+                    localStorage.setItem('expirationDate', JSON.stringify(expirationDate));
+
                     this.username = username;
                     this.token = jsonResponse.access_token;
-
-                    if (jsonResponse.totpQRCode || jsonResponse.hasTwoFactorAuth) {
-                        router.push(TWO_FACTOR_AUTH_ROUTE);
-                    }
+                    this.expirationDate = expirationDate
                 }
-                router.push('/');
 
+                router.push('/');
             }catch(error){
                 if (error instanceof HttpResponseError) {
                     throw error; // Throw the expected HTTP error
@@ -59,15 +65,32 @@ export const useAuthStore = defineStore ({
                 throw new Error('Unexpected error');
             }
 
-        },
+        },   
         logout() {
             this.username = null;
             this.token = null;
+            this.expirationDate = null;
 
             localStorage.removeItem('username');
-            localStorage.removeItems('token');         
+            localStorage.removeItem('token');         
+            localStorage.removeItem('expirationDate');   
             
             router.push(LOGIN_ROUTE)
+        },
+        expired() {            
+            // the auth store is expired if the token is null or the expiration date is less than current date
+            var isExpired = this.token == null || this.expirationDate == null || this.expirationDate < Date.now()
+            if(isExpired) {
+                this.username = null;
+                this.token = null;
+                this.expirationDate = null;
+    
+                localStorage.removeItem('username');
+                localStorage.removeItem('token');         
+                localStorage.removeItem('expirationDate');                 
+            }
+            
+            return isExpired
         }
-    }
+    },
 })

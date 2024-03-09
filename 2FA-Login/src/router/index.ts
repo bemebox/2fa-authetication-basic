@@ -37,8 +37,9 @@ router.beforeEach(async (to) => {
   const authRequired = !publicPages.includes(to.path);
   const authStore = useAuthStore();
 
-  //if authentication is required and the user is not logged in
-  if(authRequired && !authStore.token) {
+  console.log('expired ' + authStore.expired())
+  
+  if(authRequired && authStore.expired()) {
     return '/login';
   }
 
