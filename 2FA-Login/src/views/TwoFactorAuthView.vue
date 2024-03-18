@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-    import TwoFactorAuthForm from '../components/TwoFactorAuthView.vue';
+    import TwoFactorAuthForm from '../components/TwoFactorAuthForm.vue'
 </script>
 
 <template>

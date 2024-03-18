@@ -7,7 +7,8 @@ import API_ENDPOINTS from '@/configs/api_endpoints';
 interface AuthStoreState {
     username: string | null;
     token: null;
-    expirationDate: number | null;  
+    expirationDate: number | null;
+    mfaRequired: boolean;
 }
   
 export const useAuthStore = defineStore('authStore', {
@@ -15,17 +16,19 @@ export const useAuthStore = defineStore('authStore', {
         username: localStorage.getItem('username') ? JSON.parse(localStorage.getItem('username')!) : null,
         token: localStorage.getItem('token') ? JSON.parse(localStorage.getItem('token')!) : null,
         expirationDate: localStorage.getItem('expirationDate') ? JSON.parse(localStorage.getItem('expirationDate')!) : null,
-        
+        mfaRequired: localStorage.getItem('mfaRequired') ? JSON.parse(localStorage.getItem('mfaRequired')!) : false,
     }),
     actions: {
         clearLocalStorage() {
             this.username = null;
             this.token = null;
             this.expirationDate = null;
+            this.mfaRequired = false;
 
             localStorage.removeItem('username');
             localStorage.removeItem('token');         
-            localStorage.removeItem('expirationDate');  
+            localStorage.removeItem('expirationDate');
+            localStorage.removeItem('mfaRequired');   
         },
         expired() {            
             // the auth store is expired if the token is null or the expiration date is less than current date
@@ -67,10 +70,14 @@ export const useAuthStore = defineStore('authStore', {
                     localStorage.setItem('username', JSON.stringify(username));
                     localStorage.setItem('token', JSON.stringify(jsonResponse.access_token));
                     localStorage.setItem('expirationDate', JSON.stringify(expirationDate));
+                    localStorage.setItem('mfaRequired', JSON.stringify(jsonResponse.mfa_enabled));
+
+                    console.log('Auth mfa_enabled:' + jsonResponse.mfa_enabled);
 
                     this.username = username;
                     this.token = jsonResponse.access_token;
-                    this.expirationDate = expirationDate
+                    this.expirationDate = expirationDate;
+                    this.mfaRequired = jsonResponse.mfa_enabled;
                 }
 
                 router.push('/');
